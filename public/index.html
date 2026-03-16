@@ -229,6 +229,73 @@ body.compact .label{display:none}
 </div>
 
 <script>
+  // Create overlay
+const overlay = document.createElement("div");
+overlay.style.position = "fixed";
+overlay.style.top = "0";
+overlay.style.left = "0";
+overlay.style.width = "100vw";
+overlay.style.height = "100vh";
+overlay.style.display = "flex";
+overlay.style.alignItems = "center";
+overlay.style.justifyContent = "center";
+overlay.style.backdropFilter = "blur(6px)";
+overlay.style.webkitBackdropFilter = "blur(6px)";
+overlay.style.background = "rgba(0,0,0,0.15)";
+overlay.style.zIndex = "9999";
+
+document.body.appendChild(overlay);
+
+// Create popup box
+const box = document.createElement("div");
+box.style.background = "rgba(0,0,0,0.45)";
+box.style.border = "2px solid red";
+box.style.borderRadius = "12px";
+box.style.padding = "40px";
+box.style.textAlign = "center";
+box.style.maxWidth = "650px";
+box.style.backdropFilter = "blur(10px)";
+box.style.webkitBackdropFilter = "blur(10px)";
+overlay.appendChild(box);
+
+// Logo image
+const logo = document.createElement("img");
+logo.src = "/assets/GUI/img/stratus.png";
+logo.style.width = "220px";
+logo.style.marginBottom = "25px";
+box.appendChild(logo);
+
+// Hollow text style helper
+function makeHollowText(element, size) {
+    element.style.fontSize = size;
+    element.style.fontWeight = "700";
+    element.style.color = "transparent";
+    element.style.webkitTextStroke = "1.5px red";
+    element.style.textStroke = "1.5px red";
+    element.style.fontFamily = "Arial, sans-serif";
+}
+
+// Main title
+const title = document.createElement("h1");
+title.textContent = "Welcome Back";
+makeHollowText(title, "42px");
+title.style.marginBottom = "15px";
+box.appendChild(title);
+
+// Description text
+const desc = document.createElement("p");
+desc.textContent =
+"Welcome back to Stratus, This is Version 2.0 the new and improved version of the original Stratus and no assets are hosted on this site any legal problems take up with Hypper Drive";
+makeHollowText(desc, "16px");
+desc.style.lineHeight = "1.6";
+box.appendChild(desc);
+
+// Click outside to close
+overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+        overlay.remove();
+    }
+});
 const tabsBox=document.getElementById("tabsScroll");
 const mainArea=document.getElementById("mainArea");
 const viewBox=document.getElementById("view");
