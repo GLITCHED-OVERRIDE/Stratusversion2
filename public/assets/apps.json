@@ -53,5 +53,25 @@
     "name": "Hulu",
     "cover": "/assets/pages/Hulu/index.png",
     "url": "/assets/pages/Hulu/index.html"
+  },
+  {
+    "name": "Netflix",
+    "cover": "/assets/pages/Netflix/index.png",
+    "url": "/assets/pages/Netflix/index.html"
+  },
+  {
+    "name": "Snapchat",
+    "cover": "/assets/pages/Snapchat/index.png",
+    "url": "/assets/pages/Snapchat/index.html"
+  },
+  {
+    "name": "TikTok",
+    "cover": "/assets/pages/Snapchat/index.png",
+    "url": "/assets/pages/Snapchat/index.html"
+  },
+  {
+    "name": "Twitch",
+    "cover": "/assets/pages/Twitch/index.png",
+    "url": "/assets/pages/Twitch/index.html"
   }
 ]
