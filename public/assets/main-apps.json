@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Apps",
+    "cover": "/assets/pages/Apps/index.png",
+    "url": "/assets/pages/Apps/index.html"
+  },
+  {
+    "name": "Games",
+    "cover": "/assets/pages/Games/index.png",
+    "url": "/assets/pages/Games/index.html"
+  },
+  {
+    "name": "Stratus AI",
+    "cover": "/assets/pages/Ai/index.png",
+    "url": "/assets/pages/Ai/index.html"
+  },
+  {
+    "name": "Browser",
+    "cover": "/assets/pages/Browser/index.png",
+    "url": "/assets/pages/Browser/index.html"
+  },
+  {
+    "name": "Chat",
+    "cover": "/assets/pages/Chat/index.png",
+    "url": "/assets/pages/Chat/index.html"
+  }
+]

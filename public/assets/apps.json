@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Stratus AI",
+    "cover": "/assets/pages/Ai/index.png",
+    "url": "/assets/pages/Ai/index.html"
+  },
+  {
+    "name": "Browser",
+    "cover": "/assets/pages/Browser/index.png",
+    "url": "/assets/pages/Browser/index.html"
+  },
+  {
+    "name": "Chat",
+    "cover": "/assets/pages/Chat/index.png",
+    "url": "/assets/pages/Chat/index.html"
+  },
+  {
+    "name": "Games",
+    "cover": "/assets/pages/Games/index.png",
+    "url": "/assets/pages/Games/index.html"
+  },
+  {
+    "name": "Coolmathgames",
+    "cover": "/assets/pages/Coolmathgames/index.png",
+    "url": "/assets/pages/Coolmathgames/index.html"
+  },
+  {
+    "name": "Crazy Games",
+    "cover": "/assets/pages/Crazy Games/index.png",
+    "url": "/assets/pages/Crazy Games/index.html"
+  },
+  {
+    "name": "Duck AI",
+    "cover": "/assets/pages/Duck AI/Index.jpg",
+    "url": "/assets/pages/Duck AI/index.html"
+  },
+  {
+    "name": "Github",
+    "cover": "/assets/pages/Github/index.png",
+    "url": "/assets/pages/Github/index.html"
+  },
+  {
+    "name": "HD Today",
+    "cover": "/assets/pages/HD Today/index.png",
+    "url": "/assets/pages/HD Today/index.html"
+  },
+  {
+    "name": "Hulu",
+    "cover": "/assets/pages/Hulu/index.png",
+    "url": "/assets/pages/Hulu/index.html"
+  }
+]
