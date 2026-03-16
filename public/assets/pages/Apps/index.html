@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stratus Apps</title>
+<link rel="stylesheet" href="/curser/curser.css">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:auto;font-family:Arial,sans-serif;background:#050505;color:#fff}
+body{display:flex;justify-content:center;align-items:flex-start;box-sizing:border-box;padding:12px;}
+#appsGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:12px;
+  width:100%;
+  max-width:1200px;
+}
+.appCard{
+  background:#1a0000;
+  border:1px solid rgba(255,70,70,0.2);
+  border-radius:8px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:8px;
+  transition:0.2s;
+}
+.appCard:hover{
+  border-color:#ff0000;
+  box-shadow:0 0 10px rgba(255,0,0,0.5);
+}
+.appCover{
+  width:100%;
+  height:100px;
+  object-fit:contain;
+  margin-bottom:8px;
+}
+.appLabel{
+  font-weight:700;
+  text-align:center;
+  font-size:14px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  width:100%;
+}
+</style>
+</head>
+<body>
+<div id="appsGrid"></div>
+<script>
+// Escape HTML
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g,m=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[m]));
+}
+
+// Load apps from JSON
+fetch("/assets/apps.json")
+.then(r=>r.json())
+.then(data=>{
+  const grid = document.getElementById("appsGrid");
+  data.forEach(app=>{
+    const card = document.createElement("div");
+    card.className="appCard";
+    card.innerHTML=`
+      <img class="appCover" src="${escapeHtml(app.cover)}">
+      <div class="appLabel">${escapeHtml(app.name)}</div>
+    `;
+    card.onclick=()=>{
+      // Call the parent page's openTab function directly
+      if(window.parent?.openTab){
+        window.parent.openTab(app);
+      } else {
+        console.warn("Parent openTab() not found!");
+      }
+    };
+    grid.appendChild(card);
+  });
+})
+.catch(err=>console.error("Failed to load apps.json:", err));
+</script>
+</body>
+</html>
