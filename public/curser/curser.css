@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  cursor: url('comic.cur') 15 0, auto;
+}
+
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: #121e1e;
+  color: #ffffff;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scrollbar-width: thin;
+  scrollbar-color: var(--highlight) var(--bg-alt);
+  position: relative;
+  cursor: url('comic.cur') 15 0, auto;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  z-index: -999;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -998;
+  pointer-events: none;
+}
+
+a,
+button,
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+label[for],
+.clickable,
+i,
+.navbar-right a,
+.navbar-right a img,
+.game,
+.game-link,
+.game-thumbnail,
+.game-gallery {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+textarea {
+  cursor: url('comictext.cur') @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+  font-family: 'Poppins', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  cursor: url('comic.cur') 4 0, auto;
+}
+
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background: #121e1e;
+  color: #ffffff;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scrollbar-width: thin;
+  scrollbar-color: var(--highlight) var(--bg-alt);
+  position: relative;
+  cursor: url('comic.cur') 4 0, auto;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  z-index: -999;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -998;
+  pointer-events: none;
+}
+
+a,
+button,
+select,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+label[for],
+.clickable,
+i,
+.navbar-right a,
+.navbar-right a img,
+.game,
+.game-link,
+.game-thumbnail,
+.game-gallery {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+textarea {
+  cursor: url('comictext.cur') 15 0, text !important;
+}
+
+a:hover,
+button:hover,
+select:hover,
+input:hover,
+i:hover,
+.navbar-right a:hover,
+.navbar-right a:hover img,
+.game:hover,
+.game-link:hover,
+.game-thumbnail:hover {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}
+
+select:active {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}6 0, text !important;
+}
+
+a:hover,
+button:hover,
+select:hover,
+input:hover,
+i:hover,
+.navbar-right a:hover,
+.navbar-right a:hover img,
+.game:hover,
+.game-link:hover,
+.game-thumbnail:hover {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}
+
+select:active {
+  cursor: url('comiclink.cur') 15 0, pointer !important;
+}
