@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="/curser/curser.css">
+<title>Stratus AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+margin:0;
+height:100vh;
+background:#000000;
+font-family:Segoe UI,Arial,sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+color:white;
+overflow:hidden;
+position:relative;
+}
+
+body::before{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:url("/assets/GUI/img/icon.png") center center no-repeat;
+background-size:contain;
+filter:blur(6px) brightness(0.7);
+opacity:0.35;
+z-index:0;
+}
+
+body::after{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:radial-gradient(circle, rgba(255,0,0,0.25), rgba(0,0,0,0.85));
+z-index:0;
+}
+
+#chat-wrapper{
+width:95%;
+max-width:900px;
+height:90vh;
+display:flex;
+flex-direction:column;
+position:relative;
+z-index:1;
+}
+
+#chat{
+flex:1;
+overflow-y:auto;
+padding:25px;
+scroll-behavior:smooth;
+}
+
+.message{
+max-width:70%;
+padding:14px 16px;
+margin:12px 0;
+border-radius:14px;
+line-height:1.4;
+font-size:15px;
+background:rgba(0,0,0,0.35);
+backdrop-filter:blur(10px);
+animation:fadeIn .2s ease;
+white-space:pre-wrap;
+}
+
+.user{
+margin-left:auto;
+border:1px solid rgba(255,0,0,0.5);
+box-shadow:0 0 10px rgba(255,0,0,0.3);
+}
+
+.ai{
+border:1px solid rgba(255,0,0,0.7);
+box-shadow:0 0 16px rgba(255,0,0,0.4);
+}
+
+#input-area{
+display:flex;
+align-items:center;
+gap:12px;
+padding:14px;
+background:rgba(0,0,0,0.45);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,0,0,0.4);
+border-radius:16px;
+box-shadow:0 0 20px rgba(255,0,0,0.15), inset 0 0 10px rgba(255,0,0,0.08);
+margin:10px;
+transition:.25s;
+}
+
+#input-area:focus-within{
+border-color:#ff0000;
+box-shadow:0 0 30px rgba(255,0,0,0.45), inset 0 0 12px rgba(255,0,0,0.15);
+}
+
+#message{
+flex:1;
+background:transparent;
+border:none;
+color:white;
+font-size:15px;
+outline:none;
+padding:10px;
+}
+
+#message::placeholder{
+color:rgba(255,255,255,0.4);
+}
+
+button{
+width:46px;
+height:46px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:50%;
+border:1px solid rgba(255,0,0,0.7);
+background:rgba(255,0,0,0.15);
+cursor:pointer;
+transition:.25s;
+box-shadow:0 0 14px rgba(255,0,0,0.4), inset 0 0 6px rgba(255,0,0,0.3);
+}
+
+button svg{
+width:18px;
+height:18px;
+fill:white;
+}
+
+button:hover{
+background:#ff0000;
+box-shadow:0 0 24px rgba(255,0,0,0.8);
+transform:translateY(-2px);
+}
+
+button:active{
+transform:scale(.9);
+}
+
+#overlay-launch{
+position:fixed;
+top:18px;
+right:18px;
+width:54px;
+height:54px;
+padding:0;
+border:none;
+outline:none;
+border-radius:14px;
+background:rgba(0,0,0,0.45);
+backdrop-filter:blur(16px);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:5;
+box-shadow:none;
+}
+
+#overlay-launch img{
+width:26px;
+height:26px;
+object-fit:contain;
+pointer-events:none;
+}
+
+#overlay-launch:hover{
+background:rgba(255,0,0,0.22);
+transform:translateY(-2px);
+box-shadow:none;
+}
+
+#overlay-launch:focus,
+#overlay-launch:focus-visible{
+outline:none;
+border:none;
+box-shadow:none;
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(5px);}
+to{opacity:1;}
+}
+</style>
+</head>
+
+<body>
+
+<button id="overlay-launch" aria-label="Open AI Overlay">
+  <img src="/assets/pages/Ai/overlay.png" alt="Overlay">
+</button>
+
+<div id="chat-wrapper">
+  <div id="chat">
+    <div class="message ai">Hello, Welcome to Stratus AI. Have any questions?</div>
+  </div>
+
+  <div id="input-area">
+    <input id="message" placeholder="Ask something..." />
+    <button onclick="sendMessage()">
+      <svg viewBox="0 0 24 24">
+        <path d="M2 21L23 12 2 3 2 10 17 12 2 14z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+let API_KEY = "";
+
+function decodeKey(encoded){
+  let unshifted = "";
+  for(let i = 0; i < encoded.length; i++){
+    unshifted += String.fromCharCode(encoded.charCodeAt(i) - 3);
+  }
+  let reversed = atob(unshifted);
+  return reversed.split("").reverse().join("");
+}
+
+async function loadKey(){
+  const res = await fetch("key.txt");
+  const encoded = (await res.text()).trim();
+  API_KEY = decodeKey(encoded);
+}
+
+loadKey();
+
+let messages = [
+  {
+    role: "system",
+    content: "You are Stratus AI. Help users and answer questions clearly and usefully."
+  }
+];
+
+async function sendMessage(){
+  if(!API_KEY){
+    alert("API key still loading");
+    return;
+  }
+
+  const input = document.getElementById("message");
+  const chat = document.getElementById("chat");
+
+  let text = input.value.trim();
+  if(!text) return;
+
+  const userBox = document.createElement("div");
+  userBox.className = "message user";
+  userBox.textContent = text;
+  chat.appendChild(userBox);
+
+  input.value = "";
+
+  messages.push({ role: "user", content: text });
+
+  const aiBox = document.createElement("div");
+  aiBox.className = "message ai";
+  chat.appendChild(aiBox);
+
+  chat.scrollTop = chat.scrollHeight;
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + API_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages: messages,
+      temperature: 1,
+      max_tokens: 1024,
+      top_p: 1,
+      stream: true
+    })
+  });
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+
+  let assistantMessage = "";
+
+  while(true){
+    const { value, done } = await reader.read();
+    if(done) break;
+
+    const chunk = decoder.decode(value);
+    const lines = chunk.split("\n");
+
+    for(const line of lines){
+      if(line.startsWith("data: ")){
+        const data = line.replace("data: ", "");
+        if(data === "[DONE]") continue;
+
+        try{
+          const json = JSON.parse(data);
+          const token = json.choices[0].delta?.content || "";
+          assistantMessage += token;
+          aiBox.textContent = assistantMessage;
+          chat.scrollTop = chat.scrollHeight;
+        }catch(e){}
+      }
+    }
+  }
+
+  messages.push({ role: "assistant", content: assistantMessage });
+}
+
+document.getElementById("message").addEventListener("keydown", function(e){
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+document.getElementById("overlay-launch").addEventListener("click", () => {
+  const overlayUrl = "/assets/pages/Ai/overlay/index.html";
+
+  const win = window.open(
+    overlayUrl,
+    "stratusAiOverlay",
+    "width=300,height=900,left=120,top=40,resizable=yes,scrollbars=no"
+  );
+
+  if (!win) {
+    alert("Popup blocked. Allow popups for this site.");
+    return;
+  }
+});
+</script>
+
+</body>
+</html>
