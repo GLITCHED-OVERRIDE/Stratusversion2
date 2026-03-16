@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/curser/curser.css">
+<title>Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family: 'Orbitron', sans-serif;
+  background: #0a0a0a;
+  color: #fff;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+body {
+  min-width: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+}
+
+h1 {
+  margin: 20px 0 10px;
+  color: #ff1a1a;
+  letter-spacing: 1px;
+}
+
+#search-bar {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 2px solid #ff1a1a;
+  background: #1a1a1a;
+  color: #fff;
+  outline: none;
+  margin-bottom: 25px;
+}
+
+.games-grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 180px));
+  justify-content: start;
+  gap: 15px;
+  align-items: start;
+}
+
+.game-card {
+  width: 180px;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 2px solid #ff1a1a;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: #111;
+}
+
+.game-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 18px rgba(255, 26, 26, 0.35);
+}
+
+.game-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.game-name {
+  padding: 10px;
+  font-size: 13px;
+  text-align: center;
+  color: #fff;
+  background: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty-text {
+  color: #aaa;
+  font-size: 14px;
+  padding: 10px 0;
+}
+
+.hidden {
+  display: none !important;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Recently Played</h1>
+  <div class="games-grid" id="recently-played"></div>
+  <div class="empty-text" id="recent-empty">No recently played games yet.</div>
+
+  <h1>Search Games</h1>
+  <input type="text" id="search-bar" placeholder="Search games...">
+
+  <h1>All Games</h1>
+  <div class="games-grid" id="games-grid"></div>
+</div>
+
+<script>
+let allGames = [];
+let gameCards = [];
+
+function getRecentlyPlayed() {
+  return JSON.parse(localStorage.getItem('recentlyPlayed') || '[]');
+}
+
+function addRecentlyPlayed(game) {
+  let recent = getRecentlyPlayed();
+  recent = recent.filter(g => g.name !== game.name);
+  recent.unshift(game);
+
+  if (recent.length > 10) {
+    recent = recent.slice(0, 10);
+  }
+
+  localStorage.setItem('recentlyPlayed', JSON.stringify(recent));
+}
+
+function displayRecentlyPlayed() {
+  const container = document.getElementById('recently-played');
+  const empty = document.getElementById('recent-empty');
+  const recent = getRecentlyPlayed();
+
+  container.innerHTML = '';
+
+  if (recent.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  recent.forEach(game => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.innerHTML = `
+      <img src="${game.cover}" alt="${escapeHtml(game.name)}">
+      <div class="game-name">${escapeHtml(game.name)}</div>
+    `;
+    card.addEventListener('click', () => openGame(game.url, game.name, game.cover));
+    container.appendChild(card);
+  });
+}
+
+function slugifyTabId(text) {
+  return 'tab-' + String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, function(match) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return map[match];
+  });
+}
+
+function openGame(url, name, cover) {
+  addRecentlyPlayed({ name, url, cover });
+  displayRecentlyPlayed();
+
+  const gameTab = {
+    id: slugifyTabId(name),
+    title: name,
+    name: name,
+    label: name,
+    icon: cover,
+    cover: cover,
+    url: url
+  };
+
+  if (window.parent && window.parent !== window) {
+    if (typeof window.parent.addNewTab === 'function') {
+      window.parent.addNewTab(gameTab);
+      return;
+    }
+
+    if (typeof window.parent.openTab === 'function') {
+      window.parent.openTab(gameTab);
+      return;
+    }
+
+    if (typeof window.parent.postMessage === 'function') {
+      window.parent.postMessage({
+        type: 'stratus-add-tab',
+        tab: gameTab,
+        switchTo: true
+      }, '*');
+      return;
+    }
+  }
+
+  window.location.href = url;
+}
+
+async function loadGames() {
+  try {
+    const res = await fetch('https://hypper-drive-api.vercel.app/Stratus/api/games');
+    const data = await res.json();
+    allGames = Array.isArray(data.data) ? data.data : [];
+    buildGamesGrid(allGames);
+  } catch (err) {
+    console.error('Failed to load games:', err);
+  }
+}
+
+function createGameCard(game) {
+  const card = document.createElement('div');
+  card.className = 'game-card';
+  card.dataset.search = (game.name || '').toLowerCase();
+
+  card.innerHTML = `
+    <img src="${game.cover}" alt="${escapeHtml(game.name)}">
+    <div class="game-name">${escapeHtml(game.name)}</div>
+  `;
+
+  card.addEventListener('click', () => openGame(game.url, game.name, game.cover));
+  return card;
+}
+
+function buildGamesGrid(games) {
+  const grid = document.getElementById('games-grid');
+  grid.innerHTML = '';
+  gameCards = [];
+
+  games.forEach(game => {
+    const card = createGameCard(game);
+    gameCards.push(card);
+    grid.appendChild(card);
+  });
+}
+
+function filterGames(value) {
+  const search = value.toLowerCase().trim();
+
+  for (const card of gameCards) {
+    const match = !search || card.dataset.search.includes(search);
+    card.classList.toggle('hidden', !match);
+  }
+}
+
+document.getElementById('search-bar').addEventListener('input', function(e) {
+  filterGames(e.target.value);
+});
+
+loadGames();
+displayRecentlyPlayed();
+</script>
+
+</body>
+</html>
