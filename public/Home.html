@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratus Home</title>
+<link rel="stylesheet" href="/curser/curser.css">
+<style>
+body, html {
+  margin:0; padding:0;
+  font-family: 'Orbitron', sans-serif;
+  background:#0a0a0a;
+  color:#fff;
+}
+.container {
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+#title-img {
+  width:300px;
+  margin-bottom:20px;
+}
+#search-bar {
+  width:100%;
+  max-width:500px;
+  padding:12px;
+  font-size:16px;
+  border-radius:8px;
+  border:2px solid #ff1a1a;
+  background:#1a1a1a;
+  color:#fff;
+  outline:none;
+  margin-bottom:25px;
+}
+.apps-grid {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+  width:100%;
+  margin-top:20px;
+}
+.app-card {
+  width:120px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  border-radius:10px;
+  border:2px solid #ff1a1a;
+  padding:10px;
+  background:#111;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.app-card:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow:0 0 18px rgba(255,26,26,0.35);
+}
+.app-card img {
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:6px;
+}
+.app-name {
+  text-align:center;
+  font-size:14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+</style>
+
+<!-- UV Proxy -->
+<script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/uv/sw.js",{scope:__uv$config.prefix});
+}
+</script>
+</head>
+<body>
+<div class="container">
+  <img id="title-img" src="/assets/GUI/img/stratus.png" alt="Stratus">
+  <input type="text" id="search-bar" placeholder="Search the web...">
+  <div class="apps-grid" id="apps-grid"></div>
+</div>
+
+<script>
+// ---------------- CONFIG ----------------
+const defaultSearch = "Startpage";
+const searchEngines = {
+  "Startpage":"https://www.startpage.com/sp/search?q="
+};
+
+// ---------------- UTILS ----------------
+function slugify(str){
+  return 'tab-'+String(str).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function normalizeURL(input){
+  input = input.trim();
+  if(input.includes(" ")) return searchEngines[defaultSearch]+encodeURIComponent(input);
+  if(!input.startsWith("http")) input = "https://"+input;
+  return input;
+}
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g,function(m){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+}
+
+// ---------------- STRATUS TAB CREATION ----------------
+function openStratusTab(url,name,icon,proxy=true){
+  const tabData = {
+    id: slugify(name),
+    title: name,
+    name: name,
+    label: name,
+    icon: icon||"",
+    url: proxy ? __uv$config.prefix + __uv$config.encodeUrl(normalizeURL(url)) : url,
+    mode: proxy ? "proxy" : "custom"
+  };
+
+  if(window.parent && window.parent !== window){
+    // Try addNewTab
+    if(typeof window.parent.addNewTab === "function"){
+      const t = window.parent.addNewTab(tabData);
+      if(proxy) autoUpdateProxyTab(t);
+      return;
+    }
+    // Try openTab
+    if(typeof window.parent.openTab === "function"){
+      const t = window.parent.openTab(tabData);
+      if(proxy) autoUpdateProxyTab(t);
+      return;
+    }
+    // Fallback postMessage
+    if(typeof window.parent.postMessage === "function"){
+      window.parent.postMessage({type:"stratus-add-tab",tab:tabData,switchTo:true},"*");
+      return;
+    }
+  }
+  window.location.href = tabData.url;
+}
+
+// ---------------- AUTO UPDATE TAB ICON/TITLE FOR PROXY ----------------
+function autoUpdateProxyTab(tab){
+  try{
+    const iframe = tab?.iframe;
+    if(!iframe) return;
+    const interval = setInterval(()=>{
+      if(!iframe.contentDocument) return;
+      try{
+        const doc = iframe.contentDocument;
+        const newTitle = doc.title;
+        const icoTag = doc.querySelector("link[rel~='icon']");
+        const newIcon = icoTag ? icoTag.href : tab.icon;
+        if(newTitle && newTitle!==tab.title) tab.title = newTitle;
+        if(newIcon) tab.icon = newIcon;
+      }catch{}
+    },400);
+  }catch(e){console.error(e);}
+}
+
+// ---------------- SEARCH BAR ----------------
+const searchBar = document.getElementById("search-bar");
+searchBar.addEventListener("keydown", e=>{
+  if(e.key==="Enter"){
+    openStratusTab(searchBar.value, searchBar.value, "", true);
+  }
+});
+
+// ---------------- SHORTCUTS ----------------
+async function loadApps(){
+  try{
+    const res = await fetch("/assets/main-apps.json");
+    const data = await res.json();
+    const grid = document.getElementById("apps-grid");
+    data.forEach(app=>{
+      const card = document.createElement("div");
+      card.className = "app-card";
+      card.innerHTML = `<img src="${app.cover}" alt="${escapeHtml(app.name)}"><div class="app-name">${escapeHtml(app.name)}</div>`;
+      card.onclick = ()=>openStratusTab(app.url,app.name,app.cover,false);
+      grid.appendChild(card);
+    });
+  }catch(e){
+    console.error("Failed to load apps:", e);
+  }
+}
+loadApps();
+</script>
+</body>
+</html>

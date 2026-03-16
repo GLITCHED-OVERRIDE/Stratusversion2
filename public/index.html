@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stratus</title>
+<link rel="stylesheet" href="/curser/curser.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#050505}
+
+:root{
+  --sidebar-w:170px;
+  --sidebar-c:64px;
+  --line:rgba(255,70,70,.22);
+  --text:#fff;
+  --bg1:rgba(45,0,0,.96);
+  --bg2:rgba(12,0,0,.98);
+  --bg3:rgba(5,5,5,.99);
+}
+
+body.compact{--sidebar-w:var(--sidebar-c)}
+
+#app{
+  display:flex;
+  width:100%;
+  height:100vh;
+  background:
+    radial-gradient(circle at left,rgba(255,0,0,.10),transparent 35%),
+    linear-gradient(180deg,#120000 0%,#070707 45%,#030303 100%);
+}
+
+/* SIDEBAR */
+#sidebar{
+  width:var(--sidebar-w);
+  flex:0 0 var(--sidebar-w);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,var(--bg1),var(--bg2) 40%,var(--bg3)),
+    radial-gradient(circle at top left,rgba(255,0,0,.18),transparent 50%);
+  border-right:1px solid var(--line);
+  transition:width .18s ease,flex-basis .18s ease;
+}
+
+#header{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 8px 6px 8px;
+}
+
+#toggle{
+  width:40px;
+  height:40px;
+  border:none;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+#toggle img{
+  width:32px;
+  height:32px;
+}
+
+#titleImg{
+  height:24px;
+  max-width:calc(100% - 50px);
+}
+
+body.compact #titleImg{display:none}
+
+/* tabs */
+#tabsArea{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+#tabsScroll{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+/* bottom apps */
+#mainArea{
+  flex:0 0 auto;
+  border-top:1px solid var(--line);
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+/* buttons */
+.app,.tab{
+  position:relative;
+  width:100%;
+  min-height:50px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 8px;
+  border:none;
+  cursor:pointer;
+  color:#fff;
+  background:url("/assets/GUI/img/bt-off.png") center/100% 100% no-repeat;
+}
+
+.app:hover,.tab:hover,
+.app.active,.tab.active{
+  background-image:url("/assets/GUI/img/bt-on.png");
+}
+
+.iconWrap{
+  width:44px;
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.icon{
+  width:44px;
+  height:22px;
+  object-fit:contain;
+}
+
+.label{
+  flex:1;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.close{
+  width:18px;
+  height:18px;
+  border:none;
+  background:transparent;
+  color:#ffd0d0;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.close:hover{color:#fff}
+
+body.compact .app,
+body.compact .tab{
+  justify-content:center;
+}
+
+body.compact .label{display:none}
+
+/* VIEW */
+#view{
+  flex:1;
+  position:relative;
+  height:100%;
+  min-width:0;
+}
+
+/* home page frame */
+#homeFrame{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+/* tab frames */
+.frame{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:none;
+  display:none;
+}
+
+.frame.active{display:block}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:rgba(255,80,80,.18);border-radius:999px}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<aside id="sidebar">
+
+<div id="header">
+<button id="toggle">
+<img src="/assets/GUI/img/icon.png">
+</button>
+<img id="titleImg" src="/assets/GUI/img/stratus.png">
+</div>
+
+<div id="tabsArea">
+<div id="tabsScroll"></div>
+</div>
+
+<div id="mainArea"></div>
+
+</aside>
+
+<div id="view">
+
+<!-- default home page -->
+<iframe id="homeFrame" src="/Home.html"></iframe>
+
+</div>
+</div>
+
+<script>
+const tabsBox=document.getElementById("tabsScroll");
+const mainArea=document.getElementById("mainArea");
+const viewBox=document.getElementById("view");
+const homeFrame=document.getElementById("homeFrame");
+const toggle=document.getElementById("toggle");
+
+const openTabs=[];
+let active=null;
+
+function escapeHtml(str){
+return String(str).replace(/[&<>"']/g,m=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[m]));
+}
+
+function makeButton(app,isTab=false){
+
+const btn=document.createElement("button");
+btn.className=isTab?"tab":"app";
+
+btn.innerHTML=`
+<div class="iconWrap">
+<img class="icon" src="${escapeHtml(app.cover||"")}">
+</div>
+<span class="label">${escapeHtml(app.name||"Untitled")}</span>
+${isTab?`<button class="close">×</button>`:""}
+`;
+
+if(isTab){
+
+btn.onclick=()=>activateTab(app.id);
+
+btn.querySelector(".close").onclick=e=>{
+e.stopPropagation();
+closeTab(app.id);
+};
+
+}else{
+
+btn.onclick=()=>openTab(app);
+
+}
+
+return btn;
+}
+
+function openTab(app){
+
+let tab=openTabs.find(t=>t.url===app.url);
+
+if(!tab){
+
+const frame=document.createElement("iframe");
+frame.className="frame";
+frame.src=app.url;
+
+viewBox.appendChild(frame);
+
+tab={
+id:Date.now()+Math.random(),
+name:app.name,
+cover:app.cover,
+url:app.url,
+frame
+};
+
+openTabs.push(tab);
+
+}
+
+active=tab.id;
+
+renderTabs();
+renderFrames();
+
+}
+
+function closeTab(id){
+
+const i=openTabs.findIndex(t=>t.id===id);
+if(i===-1)return;
+
+const wasActive=active===id;
+
+openTabs[i].frame.remove();
+openTabs.splice(i,1);
+
+if(wasActive){
+
+active=openTabs[i]?.id||
+openTabs[i-1]?.id||
+openTabs[openTabs.length-1]?.id||
+null;
+
+}
+
+renderTabs();
+renderFrames();
+
+}
+
+function activateTab(id){
+
+active=id;
+
+renderTabs();
+renderFrames();
+
+}
+
+function renderTabs(){
+
+tabsBox.innerHTML="";
+
+for(const tab of openTabs){
+
+const el=makeButton(tab,true);
+
+if(tab.id===active)el.classList.add("active");
+
+tabsBox.appendChild(el);
+
+}
+
+}
+
+function renderFrames(){
+
+/* show home when no tabs */
+homeFrame.style.display=openTabs.length?"none":"block";
+
+for(const tab of openTabs){
+
+tab.frame.classList.toggle("active",tab.id===active);
+
+}
+
+}
+
+function loadMainApps(){
+
+mainArea.innerHTML="";
+
+fetch("/assets/main-apps.json")
+.then(r=>r.json())
+.then(data=>{
+
+if(!Array.isArray(data))return;
+
+data.forEach(app=>{
+mainArea.appendChild(makeButton(app,false));
+});
+
+})
+.catch(()=>{});
+
+}
+
+toggle.onclick=()=>{
+
+document.body.classList.toggle("compact");
+
+};
+
+loadMainApps();
+renderTabs();
+renderFrames();
+</script>
+
+</body>
+</html>
