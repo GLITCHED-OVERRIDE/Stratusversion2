@@ -5,6 +5,11 @@
     "url": "/assets/pages/Ai/index.html"
   },
   {
+    "name": "Music",
+    "cover": "/assets/pages/Music/index.png",
+    "url": "/assets/pages/Music/index.html"
+  },
+  {
     "name": "Browser",
     "cover": "/assets/pages/Browser/index.png",
     "url": "/assets/pages/Browser/index.html"
